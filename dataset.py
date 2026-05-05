@@ -4,8 +4,6 @@ import torch
 from torch.utils.data import Dataset
 import cv2 # image processing lib
 
-#! one X-ray → multiple per-bone masks → merge into single binary mask
-
 
 #! patient 283's image folder contains .gif file 
 
@@ -30,7 +28,8 @@ def __getitem__(self,idx):
     image = cv2.resize(image, (512, 512))
     
     # get & set mask
-    mask = load_merged_mask(self.mask_folders[idx])
+    mask = load_merged_mask(self.mask_folders[idx]) #! one X-ray → multiple per-bone masks → merge into single binary mask
+
     mask = cv2.resize(mask, (512, 512), interpolation=cv2.INTER_NEAREST) # mask MUST contain only 0 OR 1
     
     
@@ -46,4 +45,20 @@ def __getitem__(self,idx):
         
         return image, mask
     
-def load_merged_mask():
+def load_merged_mask(mask_folder):
+    npy_files = []
+    for f in os.listdir(mask_folder):
+        if f.endswith(".npy"):
+            npy_files.append(os.path.join(mask_folder, f))
+            
+    if not npy_files: # prevention for inconsistent data
+        raise ValueError(f"No masks found in {mask_folder}")
+
+    masks = []
+    for path in npy_files:
+        masks.append(np.load(path))
+        
+    stacked = np.stack(masks)           # (N, 512, 512)
+    merged = np.any(stacked, axis=0).astype(np.uint8)  # (512, 512), 0 OR 1
+    
+    return merged
