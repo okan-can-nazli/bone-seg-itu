@@ -75,15 +75,15 @@ def build_file_lists(images_dir, masks_dir):
     images_ls = []
     masks_ls = []
     
-    # sorted() provides index matching between iimages and masks
+    # sorted() provides index matching between iimages and masks (based on index)
     
-    for sub_folder in sorted(os.listdir(images_dir)):
+    for sub_folder in sorted(os.listdir(images_dir), key=lambda x: int(x)):
         sub_path = os.path.join(images_dir, sub_folder)
         for f in os.listdir(sub_path):
             if f.lower().endswith(".jpg"):
                 images_ls.append(os.path.join(sub_path, f))
                 
-    for sub_folder in sorted(os.listdir(masks_dir)):
+    for sub_folder in sorted(os.listdir(masks_dir), key=lambda x: int(x)):
         sub_path = os.path.join(masks_dir, sub_folder)
         masks_ls.append(sub_path)
     
