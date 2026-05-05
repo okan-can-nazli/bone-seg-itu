@@ -6,11 +6,13 @@
 import torch
 import torch.nn as nn
 
-def dice_loss(pred, target, smooth=1e-9): # smooth prevents 0/0 condition
+
+def dice_loss(pred, target, smooth=1e-9): # smooth: prevents 0/0 condition
     pred = torch.sigmoid(pred)  # logits → probabilities (0-1)
     intersection = torch.sum(pred * target)
     dice = (2 * intersection + smooth) / (torch.sum(pred) + torch.sum(target) + smooth)
-    return 1 - dice # higher is better
+    return 1 - dice 
+
 
 def bce_dice_loss(pred, target, bce_weight=0.5):
     bce = nn.BCEWithLogitsLoss()(pred, target.float())
