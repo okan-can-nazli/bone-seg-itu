@@ -16,4 +16,4 @@ def get_model():
     return model
 
 def count_parameters(model):
-    return sum(p.numel() for p in model.parameters() if p.requires_grad)
+    return sum(p.numel() for p in model.parameters() if p.requires_grad) # Returns total number of trainable parameters in the model.
