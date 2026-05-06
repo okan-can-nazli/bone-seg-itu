@@ -9,5 +9,11 @@ def get_model():
     in_channels=3, # rgb channels on tensor
     classes=1, # output has 1 channel
     activation=None, # BCEWithLogitsLoss applies sigmoid internally
-)
+    )
+    
+    print(f"[Model] Parameters: {count_parameters(model):,}")
+    
     return model
+
+def count_parameters(model):
+    return sum(p.numel() for p in model.parameters() if p.requires_grad)
