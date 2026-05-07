@@ -16,9 +16,9 @@ from metrics import dice_score, hd95
 
 #####################
 #! Constants
-LEARNING_RATE = 1e-3
+LEARNING_RATE = 3e-4
 EPOCH = 50
-BATCH_SIZE = 8
+BATCH_SIZE = 4
 #####################
 
 
@@ -73,6 +73,7 @@ def main():
         model  = get_model().to(device)
 
         optimizer = torch.optim.AdamW(model.parameters(), lr=LEARNING_RATE, weight_decay=1e-4)
+        scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=EPOCH, eta_min=1e-6)
 
         best_dice = 0.0
         best_path = os.path.join(OUTPUT_DIR, f"fold{fold+1}_best.pth")
@@ -101,6 +102,7 @@ def main():
                 optimizer.step()
 
                 train_loss += loss.item()
+            
 
             # --- VALIDATİON ---
             model.eval()
@@ -129,7 +131,7 @@ def main():
                 
             train_losses.append(train_loss / len(train_loader))
             val_dices_per_epoch.append(mean_dice)
-        
+            scheduler.step()
         #visualation
 
         # Loss/Dice graph
