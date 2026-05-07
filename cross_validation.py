@@ -146,7 +146,7 @@ def main():
         ax2.set_xlabel("Epoch")
         ax2.legend()
         plt.tight_layout()
-        plt.savefig(os.path.join(OUTPUT_DIR, f"fold{fold+1}_metrics.png"))
+        plt.savefig(os.path.join(OUTPUT_DIR, f"fold{fold+1}_metrics.png"), dpi=300)
         plt.close()
         
         
