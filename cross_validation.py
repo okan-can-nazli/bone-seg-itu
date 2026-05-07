@@ -26,10 +26,11 @@ def main():
     # LOCAL
     # IMAGE_DIR = "Data/images"
     # MASK_DIR = "Data/masks"
-
+    IMAGE_DIR = "/content/New_Labels"
+    MASK_DIR = "/content/New_masks"
     # COLAB
-    IMAGE_DIR = "/content/drive/MyDrive/Bone/New_Labels"
-    MASK_DIR = "/content/drive/MyDrive/Bone/New_masks"
+    #IMAGE_DIR = "/content/drive/MyDrive/Bone/New_Labels"
+    #MASK_DIR = "/content/drive/MyDrive/Bone/New_masks"
     OUTPUT_DIR = "/content/drive/MyDrive/Bone/bone_seg_outputs"
     
     os.makedirs(OUTPUT_DIR, exist_ok=True)
