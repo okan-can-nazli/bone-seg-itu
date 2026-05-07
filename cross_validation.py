@@ -7,7 +7,7 @@ from tqdm import tqdm # training progress bar
 import matplotlib.pyplot as plt
 
 import albumentations as Augment # augmentation lib
-from albumentations.pytorch import ToTensorV2 # convert np array into tensor
+# from albumentations.pytorch import ToTensorV2 # convert np array into tensor
 
 from dataset import BoneSegDataset, build_file_lists
 from unet import get_model
@@ -38,15 +38,10 @@ def main():
     train_transform = Augment.Compose([
         Augment.HorizontalFlip(p=0.5),
         Augment.RandomRotate90(p=0.5),
-        Augment.ShiftScaleRotate(p=0.3),
-        Augment.Normalize(mean=(0.485, 0.456, 0.406), std=(0.229, 0.224, 0.225)),
-        ToTensorV2(),
+        Augment.ShiftScaleRotate(p=0.3)
     ])
 
-    val_transform = Augment.Compose([
-        Augment.Normalize(mean=(0.485, 0.456, 0.406), std=(0.229, 0.224, 0.225)),
-        ToTensorV2(),
-    ])
+    val_transform = None
 
     results = []
 
