@@ -90,6 +90,7 @@ def main():
 
                 optimizer.zero_grad()
                 preds = model(images)
+                masks = masks.unsqueeze(1)  # (8,512,512) → (8,1,512,512)
                 loss  = bce_dice_loss(preds, masks) # bce dice loss
                 loss.backward()
                 optimizer.step()
@@ -106,7 +107,7 @@ def main():
                     images  = images.to(device)
                     masks = masks.to(device)
                     preds = model(images)
-
+                    masks = masks.unsqueeze(1)  # (8,512,512) → (8,1,512,512)
                     val_dices.append(dice_score(preds, masks).item())
                     val_hd95s.append(hd95(preds, masks))
 
