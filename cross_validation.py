@@ -28,7 +28,7 @@ def main():
     # MASK_DIR = "Data/masks"
     IMAGE_DIR = "/kaggle/input/datasets/okancannazli/bones-seg/New_Labels-20260504T191710Z-3-001/New_Labels"
     MASK_DIR  = "/kaggle/input/datasets/okancannazli/bones-seg/New_masks-20260504T191902Z-3-001/New_masks"
-    OUTPUT_DIR = "/kaggle/working/outputs""
+    OUTPUT_DIR = "/kaggle/working/outputs"
     os.makedirs(OUTPUT_DIR, exist_ok=True)
 
     image_paths, mask_folders = build_file_lists(IMAGE_DIR, MASK_DIR)
