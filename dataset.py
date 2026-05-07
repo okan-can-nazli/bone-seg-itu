@@ -56,9 +56,12 @@ class BoneSegDataset(Dataset):
         
 def load_merged_mask(mask_folder):
     npy_files = []
-    for f in os.listdir(mask_folder):
-        if f.endswith(".npy"):
-            npy_files.append(os.path.join(mask_folder, f))
+    for sub in os.listdir(mask_folder):
+        sub_path = os.path.join(mask_folder, sub)
+        if os.path.isdir(sub_path):
+            for f in os.listdir(sub_path):
+                if f.endswith(".npy"):
+                    npy_files.append(os.path.join(sub_path, f))
             
     if not npy_files: # prevention for inconsistent data
         raise ValueError(f"No masks found in {mask_folder}")
