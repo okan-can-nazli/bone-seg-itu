@@ -24,8 +24,8 @@ class BoneSegDataset(Dataset):
     def __getitem__(self,idx):
         
         # get & set image
-        image = cv2.imread(self.image_paths[idx]) # format : (H,W,3) , BGR
-        image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB) # RGB
+        image = cv2.imread(self.image_paths[idx], cv2.IMREAD_GRAYSCALE) # format : (H,W,3) , BGR
+        image = cv2.cvtColor(image, cv2.COLOR_GRAY2RGB)  # grayscale → 3 channel
         image = cv2.resize(image, (384, 384))
         
         # get & set mask
