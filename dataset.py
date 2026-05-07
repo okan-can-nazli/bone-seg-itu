@@ -26,12 +26,12 @@ class BoneSegDataset(Dataset):
         # get & set image
         image = cv2.imread(self.image_paths[idx]) # format : (H,W,3) , BGR
         image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB) # RGB
-        image = cv2.resize(image, (256, 256))
+        image = cv2.resize(image, (384, 384))
         
         # get & set mask
         mask = load_merged_mask(self.mask_folders[idx]) #! one X-ray → multiple per-bone masks → merge into single binary mask
 
-        mask = cv2.resize(mask, (256, 256), interpolation=cv2.INTER_NEAREST) # mask MUST contain only 0 OR 1
+        mask = cv2.resize(mask, (384, 384), interpolation=cv2.INTER_NEAREST) # mask MUST contain only 0 OR 1
         
         
         if self.transform is not None:
