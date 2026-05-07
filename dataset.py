@@ -35,11 +35,9 @@ class BoneSegDataset(Dataset):
         
         
         if self.transform is not None:
-            augmented = self.transform(image=image, mask=mask) # flip/rotate (random)
-            image = augmented["image"]
-            mask = augmented["mask"]
-            image = torch.from_numpy(image).permute(2, 0, 1).float() / 255.0
-            mask = torch.from_numpy(mask).float()
+            augmented = self.transform(image=image, mask=mask)
+            image = augmented["image"].float()  # Normalize already handled /255
+            mask = augmented["mask"].float()
         
         else:
             
