@@ -109,12 +109,12 @@ def main():
                     masks = masks.unsqueeze(1)  # (8,512,512) → (8,1,512,512)
                     
                     val_dices.append(dice_score(preds, masks).item())
-                    val_hd95s.append(hd95(preds, masks))
+                    # val_hd95s.append(hd95(preds, masks))
 
             mean_dice = np.mean(val_dices)
-            mean_hd95 = np.mean(val_hd95s)
+            # mean_hd95 = np.mean(val_hd95s)
 
-            print(f"Epoch {epoch+1} | Loss: {train_loss/len(train_loader):.4f} | Dice: {mean_dice:.4f} | HD95: {mean_hd95:.2f}px")
+            print(f"Epoch {epoch+1} | Loss: {train_loss/len(train_loader):.4f} | Dice: {mean_dice:.4f}")
 
             if mean_dice > best_dice:
                 best_dice = mean_dice
@@ -141,10 +141,23 @@ def main():
         plt.savefig(os.path.join(OUTPUT_DIR, f"fold{fold+1}_metrics.png"), dpi=300)
         plt.close()
         
+        model.eval()
+        fold_hd95s = []
+        with torch.no_grad():
+            for images, masks in val_loader:
+                images = images.to(device)
+                masks = masks.to(device)
+                preds = model(images)
+                masks = masks.unsqueeze(1)
+                fold_hd95s.append(hd95(preds, masks))
+        mean_hd95 = np.mean(fold_hd95s)
+        print(f"Fold {fold+1} HD95: {mean_hd95:.2f}px")
         
         
         
         results.append({"fold": fold+1, "dice": best_dice, "hd95": mean_hd95})
+
+
 
     print("\n=== RESULTS ===")
     for r in results:
