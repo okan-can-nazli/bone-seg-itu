@@ -16,8 +16,9 @@ from metrics import dice_score, hd95
 
 #####################
 #! Constants
-LEARNING_RATE = 1e-4
+LEARNING_RATE = 1e-3
 EPOCH = 50
+BATCH_SIZE = 8
 #####################
 
 
@@ -65,8 +66,8 @@ def main():
         val_dataset   = BoneSegDataset(image_paths=val_images, mask_folders=val_masks, transform=val_transform)
 
         # batches into groups of 8 for training/validation
-        train_loader = DataLoader(train_dataset, batch_size=2, shuffle=True)
-        val_loader   = DataLoader(val_dataset,   batch_size=2, shuffle=False)
+        train_loader = DataLoader(train_dataset, batch_size=BATCH_SIZE, shuffle=True)
+        val_loader   = DataLoader(val_dataset,   batch_size=BATCH_SIZE, shuffle=False)
 
         device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         model  = get_model().to(device)
