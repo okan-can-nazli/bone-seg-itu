@@ -4,6 +4,7 @@ import numpy as np
 from torch.utils.data import DataLoader
 from sklearn.model_selection import KFold # provides train/val index splits into 5-fold
 from tqdm import tqdm # training progress bar 
+import matplotlib.pyplot as plt
 
 import albumentations as Augment # augmentation lib
 from albumentations.pytorch import ToTensorV2 # convert np array into tensor
@@ -77,6 +78,10 @@ def main():
 
         best_dice = 0.0
         best_path = os.path.join(OUTPUT_DIR, f"fold{fold+1}_best.pth")
+        
+        #for visualation
+        train_losses = []
+        val_dices_per_epoch = []
 
         for epoch in range(EPOCH):
             
@@ -84,6 +89,8 @@ def main():
             train_loss = 0.0
             model.train()
 
+            
+            
             for images, masks in tqdm(train_loader, desc=f"Epoch {epoch+1}/{EPOCH} Train"):
                 images  = images.to(device)
                 masks = masks.to(device)
@@ -108,6 +115,7 @@ def main():
                     masks = masks.to(device)
                     preds = model(images)
                     masks = masks.unsqueeze(1)  # (8,512,512) → (8,1,512,512)
+                    
                     val_dices.append(dice_score(preds, masks).item())
                     val_hd95s.append(hd95(preds, masks))
 
@@ -120,7 +128,30 @@ def main():
                 best_dice = mean_dice
                 torch.save(model.state_dict(), best_path)
                 print(f"  ✓ Best model saved (Dice={best_dice:.4f})")
+                
+            train_losses.append(train_loss / len(train_loader))
+            val_dices_per_epoch.append(mean_dice)
+        
+        #visualation
 
+        # Loss/Dice graph
+        epochs_range = range(1, EPOCH + 1)
+        fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(12, 4))
+        ax1.plot(train_losses, label="Train Loss")
+        ax1.set_title(f"Fold {fold+1} - Loss")
+        ax1.set_xlabel("Epoch")
+        ax1.legend()
+        ax2.plot(val_dices_per_epoch, label="Val Dice", color="green")
+        ax2.set_title(f"Fold {fold+1} - Dice Score")
+        ax2.set_xlabel("Epoch")
+        ax2.legend()
+        plt.tight_layout()
+        plt.savefig(os.path.join(OUTPUT_DIR, f"fold{fold+1}_metrics.png"))
+        plt.close()
+        
+        
+        
+        
         results.append({"fold": fold+1, "dice": best_dice, "hd95": mean_hd95})
 
     print("\n=== RESULTS ===")
