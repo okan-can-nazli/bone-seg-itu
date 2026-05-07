@@ -72,7 +72,7 @@ def main():
         device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         model  = get_model().to(device)
 
-        optimizer = torch.optim.Adam(model.parameters(), lr=LEARNING_RATE)
+        optimizer = torch.optim.AdamW(model.parameters(), lr=LEARNING_RATE, weight_decay=1e-4)
 
         best_dice = 0.0
         best_path = os.path.join(OUTPUT_DIR, f"fold{fold+1}_best.pth")
