@@ -96,7 +96,7 @@ def main():
 
                 optimizer.zero_grad()
                 preds = model(images)
-                masks = masks.unsqueeze(1)  # (8,512,512) → (8,1,512,512)
+                preds = preds.squeeze(1)  # (B,1,H,W) → (B,H,W)
                 loss  = bce_dice_loss(preds, masks) # bce dice loss
                 loss.backward()
                 optimizer.step()
@@ -114,7 +114,7 @@ def main():
                     images  = images.to(device)
                     masks = masks.to(device)
                     preds = model(images)
-                    masks = masks.unsqueeze(1)  # (8,512,512) → (8,1,512,512)
+                    preds = preds.squeeze(1)  # (B,1,H,W) → (B,H,W)
                     
                     val_dices.append(dice_score(preds, masks).item())
                     # val_hd95s.append(hd95(preds, masks))
@@ -156,7 +156,7 @@ def main():
                 images = images.to(device)
                 masks = masks.to(device)
                 preds = model(images)
-                masks = masks.unsqueeze(1)
+                preds = preds.squeeze(1)  # (B,1,H,W) → (B,H,W)
                 fold_hd95s.append(hd95(preds, masks))
         mean_hd95 = np.mean(fold_hd95s)
         print(f"Fold {fold+1} HD95: {mean_hd95:.2f}px")
