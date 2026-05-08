@@ -81,14 +81,23 @@ def build_file_lists(images_dir, masks_dir):
     
     # sorted() provides index matching between iimages and masks (based on index)
     
-    for sub_folder in sorted([f for f in os.listdir(images_dir) if os.path.isdir(os.path.join(images_dir, f)) and f.isdigit()], key=lambda x: int(x)):
-        sub_path = os.path.join(images_dir, sub_folder)
-        for f in os.listdir(sub_path):
-            if f.lower().endswith(".jpg"):
-                images_ls.append(os.path.join(sub_path, f))
-                
-    for sub_folder in sorted([f for f in os.listdir(masks_dir) if os.path.isdir(os.path.join(masks_dir, f)) and f.isdigit()], key=lambda x: int(x)):        
-        sub_path = os.path.join(masks_dir, sub_folder)
-        masks_ls.append(sub_path)
+    for sub_folder in sorted([f for f in os.listdir(masks_dir) 
+                               if os.path.isdir(os.path.join(masks_dir, f)) 
+                               and f.isdigit()], key=lambda x: int(x)):
+        
+        mask_path = os.path.join(masks_dir, sub_folder)
+        img_folder = os.path.join(images_dir, sub_folder)
+        
+        if not os.path.isdir(img_folder):
+            continue
+            
+        # image bul
+        jpgs = [f for f in os.listdir(img_folder) if f.lower().endswith(".jpg")]
+        if not jpgs:
+            continue
+            
+        images_ls.append(os.path.join(img_folder, jpgs[0]))
+        masks_ls.append(mask_path)
     
+    print(f"[Dataset] {len(images_ls)} matched pairs found.")
     return images_ls, masks_ls
