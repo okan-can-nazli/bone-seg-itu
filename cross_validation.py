@@ -17,7 +17,7 @@ from metrics import dice_score, hd95
 #####################
 #! Constants
 LEARNING_RATE = 3e-4
-EPOCH = 50
+EPOCH = 100
 BATCH_SIZE = 4
 #####################
 
@@ -37,12 +37,15 @@ def main():
     kf = KFold(n_splits=5, shuffle=True, random_state=42) # tr:400/val:100 sample each fold
 
     train_transform = Augment.Compose([
-        Augment.HorizontalFlip(p=0.5),
-        Augment.RandomRotate90(p=0.5),
-        Augment.ShiftScaleRotate(p=0.3),
-        Augment.Normalize(mean=(0.485, 0.456, 0.406), std=(0.229, 0.224, 0.225)),
-        ToTensorV2(),
-    ])
+    Augment.HorizontalFlip(p=0.5),
+    Augment.RandomRotate90(p=0.5),
+    Augment.ShiftScaleRotate(p=0.3),
+    Augment.ElasticTransform(p=0.3),          
+    Augment.RandomBrightnessContrast(p=0.4),   
+    Augment.GaussNoise(p=0.2),                 
+    Augment.Normalize(mean=(0.485, 0.456, 0.406), std=(0.229, 0.224, 0.225)),
+    ToTensorV2(),
+])
 
     val_transform = Augment.Compose([
     Augment.Normalize(mean=(0.485, 0.456, 0.406), std=(0.229, 0.224, 0.225)),
