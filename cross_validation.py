@@ -75,7 +75,7 @@ def main():
         device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         model  = get_model().to(device)
 
-        optimizer = torch.optim.AdamW(model.parameters(), lr=LEARNING_RATE, weight_decay=1e-4)
+        optimizer = torch.optim.Adam(model.parameters(), lr=LEARNING_RATE)
         scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=EPOCH, eta_min=1e-6)
 
         best_dice = 0.0
