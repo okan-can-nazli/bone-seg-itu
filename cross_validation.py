@@ -67,7 +67,7 @@ def main():
 
         # batches into groups of 8 for training/validation
         train_loader = DataLoader(train_dataset, batch_size=BATCH_SIZE, shuffle=True)
-        val_loader   = DataLoader(val_dataset,   batch_size=BATCH_SIZE, shuffle=False)
+        val_loader   = DataLoader(val_dataset,   batch_size=1, shuffle=False)
 
         device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         model  = get_model().to(device)
