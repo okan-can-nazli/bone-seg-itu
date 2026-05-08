@@ -92,7 +92,7 @@ def build_file_lists(images_dir, masks_dir):
             continue
             
         # image bul
-        jpgs = [f for f in os.listdir(img_folder) if f.lower().endswith(".jpg")]
+        jpgs = [f for f in os.listdir(img_folder) if f.lower().endswith((".jpg", ".jpeg", ".png"))] # there are 468 samples only ".jpg" ,total 499 samples (not 500 because of folder 283 contains .gif file) 
         if not jpgs:
             continue
             
