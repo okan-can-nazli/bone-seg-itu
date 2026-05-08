@@ -11,8 +11,10 @@ from dataset import build_file_lists, load_merged_mask
 from unet import get_model
 
 
-def run_inference(output_dir, image_dir, mask_dir):
-
+def visualize_predictions(output_dir, image_dir, mask_dir, best_fold_idx):
+    """
+    best_fold_idx: 0-indexed fold number (e.g. fold 1 → 0)
+    """
     os.makedirs(output_dir, exist_ok=True)
 
     image_paths, mask_folders = build_file_lists(image_dir, mask_dir)
@@ -24,16 +26,21 @@ def run_inference(output_dir, image_dir, mask_dir):
         ToTensorV2(),
     ])
 
-    # fold 1 val seti
-    train_idx, val_idx = list(kf.split(image_paths))[0]
-    val_images = [image_paths[i] for i in val_idx]
-    val_masks  = [mask_folders[i] for i in val_idx]
+    # Best fold'un val setini al
+    for fold, (train_idx, val_idx) in enumerate(kf.split(image_paths)):
+        if fold == best_fold_idx:
+            val_images = [image_paths[i] for i in val_idx]
+            val_masks  = [mask_folders[i] for i in val_idx]
+            break
 
+    # Model yükle
     model = get_model().to(device)
-    model.load_state_dict(torch.load(f"{output_dir}/fold1_best.pth", map_location=device))
+    model.load_state_dict(torch.load(
+        os.path.join(output_dir, f"fold{best_fold_idx+1}_best.pth"),
+        map_location=device))
     model.eval()
 
-    # --- Her sample için Dice hesapla ---
+    # Her sample için Dice hesapla
     sample_dices = []
     with torch.no_grad():
         for idx in range(len(val_images)):
@@ -53,17 +60,16 @@ def run_inference(output_dir, image_dir, mask_dir):
             dice = (2 * intersection + 1e-9) / (pred_bin.sum() + mask.sum() + 1e-9)
             sample_dices.append((idx, float(dice), img_resized, mask, pred_bin))
 
-    # En kötü 3 + en iyi 3
+    # En iyi 3 + en kötü 3
     sample_dices.sort(key=lambda x: x[1])
     worst = sample_dices[:3]
-    best  = sample_dices[-3:][::-1]  # en iyiden başla
+    best  = sample_dices[-3:][::-1]
     selected = best + worst
-
     labels = ['Best 1', 'Best 2', 'Best 3', 'Worst 1', 'Worst 2', 'Worst 3']
 
-    # --- Prediction visualization ---
+    # Prediction visualization
     fig, axes = plt.subplots(6, 3, figsize=(12, 24))
-    fig.suptitle("Bone Segmentation — Best & Worst Predictions", 
+    fig.suptitle(f"Bone Segmentation — Best & Worst Predictions (Fold {best_fold_idx+1})",
                  fontsize=14, fontweight='bold')
 
     for row, (idx, dice, img_resized, mask, pred_bin) in enumerate(selected):
@@ -86,10 +92,17 @@ def run_inference(output_dir, image_dir, mask_dir):
     plt.close()
     print("Saved: predictions_visualization.png")
 
-    # --- Results bar chart ---
-    folds = ['Fold 1', 'Fold 2', 'Fold 3', 'Fold 4', 'Fold 5']
-    dices = [0.9435, 0.9305, 0.9399, 0.9424, 0.9454]
-    hd95s = [4.23, 5.24, 5.32, 6.32, 2.25]
+    del model
+    torch.cuda.empty_cache()
+
+
+def save_results_chart(output_dir, results):
+    """
+    results: list of dicts with 'fold', 'dice', 'hd95'
+    """
+    folds = [f"Fold {r['fold']}" for r in results]
+    dices = [r['dice'] for r in results]
+    hd95s = [r['hd95'] for r in results]
 
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(12, 4))
 
@@ -115,14 +128,3 @@ def run_inference(output_dir, image_dir, mask_dir):
     plt.savefig(os.path.join(output_dir, "results_chart.png"), dpi=300, bbox_inches='tight')
     plt.close()
     print("Saved: results_chart.png")
-
-    del model
-    torch.cuda.empty_cache()
-
-
-if __name__ == "__main__":
-    run_inference(
-        output_dir="/kaggle/working/outputs",
-        image_dir="/kaggle/input/datasets/okancannazli/bones-seg/New_Labels-20260504T191710Z-3-001/New_Labels",
-        mask_dir="/kaggle/input/datasets/okancannazli/bones-seg/New_masks-20260504T191902Z-3-001/New_masks",
-    )

@@ -181,8 +181,12 @@ def main():
 
 
     # inference
-    from inference import run_inference
-    run_inference(OUTPUT_DIR, IMAGE_DIR, MASK_DIR)
+    best_fold_idx = max(range(len(results)), key=lambda i: results[i]['dice'])
+    print(f"Best fold: Fold {best_fold_idx+1} (Dice={results[best_fold_idx]['dice']:.4f})")
+
+    from inference import visualize_predictions, save_results_chart
+    save_results_chart(OUTPUT_DIR, results)
+    visualize_predictions(OUTPUT_DIR, IMAGE_DIR, MASK_DIR, best_fold_idx)
 
 if __name__ == "__main__":
     main()
