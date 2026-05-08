@@ -164,7 +164,10 @@ def main():
         
         del model
         torch.cuda.empty_cache()
-        
+        import gc
+        gc.collect()
+
+        mean_hd95 = 0.0  # temp
         results.append({"fold": fold+1, "dice": best_dice, "hd95": mean_hd95})
 
 
