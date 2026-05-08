@@ -24,17 +24,20 @@ BATCH_SIZE = 8
 
 def main():
     
-    # LOCAL
+    # LOCAL DİRS
     # IMAGE_DIR = "Data/images"
     # MASK_DIR = "Data/masks"
+    
+    #KAGGLE DİRS
     IMAGE_DIR = "/kaggle/input/datasets/okancannazli/bones-seg/New_Labels-20260504T191710Z-3-001/New_Labels"
     MASK_DIR  = "/kaggle/input/datasets/okancannazli/bones-seg/New_masks-20260504T191902Z-3-001/New_masks"
     OUTPUT_DIR = "/kaggle/working/outputs"
+    
     os.makedirs(OUTPUT_DIR, exist_ok=True)
 
     image_paths, mask_folders = build_file_lists(IMAGE_DIR, MASK_DIR)
 
-    kf = KFold(n_splits=5, shuffle=True, random_state=42) # tr:400/val:100 sample each fold
+    kf = KFold(n_splits=5, shuffle=True, random_state=42) # (train:400 : validate:100 sample in all folds) / 5 
 
     train_transform = Augment.Compose([
         Augment.HorizontalFlip(p=0.5),
@@ -132,8 +135,9 @@ def main():
             train_losses.append(train_loss / len(train_loader))
             val_dices_per_epoch.append(mean_dice)
             scheduler.step()
+            
+            
         #visualation
-
         # Loss/Dice graph
         epochs_range = range(1, EPOCH + 1)
         fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(12, 4))
@@ -181,12 +185,12 @@ def main():
 
 
     # inference
-    best_fold_idx = max(range(len(results)), key=lambda i: results[i]['dice'])
-    print(f"Best fold: Fold {best_fold_idx+1} (Dice={results[best_fold_idx]['dice']:.4f})")
+    best_fold_idx  = max(range(len(results)), key=lambda i: results[i]['dice'])
+    worst_fold_idx = min(range(len(results)), key=lambda i: results[i]['dice'])
 
     from inference import visualize_predictions, save_results_chart
     save_results_chart(OUTPUT_DIR, results)
-    visualize_predictions(OUTPUT_DIR, IMAGE_DIR, MASK_DIR, best_fold_idx)
+    visualize_predictions(OUTPUT_DIR, IMAGE_DIR, MASK_DIR, best_fold_idx, worst_fold_idx)
 
 if __name__ == "__main__":
     main()
