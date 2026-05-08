@@ -179,5 +179,10 @@ def main():
     hd95s = [r["hd95"] for r in results]
     print(f"\nOverall: Dice={np.mean(dices):.4f} ± {np.std(dices):.4f}, HD95={np.mean(hd95s):.2f} ± {np.std(hd95s):.2f}px")
 
+
+    # inference
+    from inference import run_inference
+    run_inference(OUTPUT_DIR, IMAGE_DIR, MASK_DIR)
+
 if __name__ == "__main__":
     main()

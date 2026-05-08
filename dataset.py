@@ -36,7 +36,7 @@ class BoneSegDataset(Dataset):
         
         if self.transform is not None:
             augmented = self.transform(image=image, mask=mask)
-            image = augmented["image"].float()  # Normalize already handled /255
+            image = augmented["image"].float()
             mask = augmented["mask"].float()
         
         else:
@@ -63,7 +63,7 @@ def load_merged_mask(mask_folder):
                 if f.endswith(".npy"):
                     npy_files.append(os.path.join(sub_path, f))
             
-    if not npy_files: # prevention for inconsistent data
+    if not npy_files: # prevention of inconsistent data
         raise ValueError(f"No masks found in {mask_folder}")
 
     masks = []
@@ -79,11 +79,11 @@ def build_file_lists(images_dir, masks_dir):
     images_ls = []
     masks_ls = []
     
-    # sorted() provides index matching between iimages and masks (based on index)
+    # sorted() provides index matching between images and masks (based on index)
     
     for sub_folder in sorted([f for f in os.listdir(masks_dir) 
                                if os.path.isdir(os.path.join(masks_dir, f)) 
-                               and f.isdigit()], key=lambda x: int(x)):
+                               and f.isdigit()], key=lambda x: int(x)):  # lambda provides sorting depends on int
         
         mask_path = os.path.join(masks_dir, sub_folder)
         img_folder = os.path.join(images_dir, sub_folder)

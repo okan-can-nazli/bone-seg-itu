@@ -1,5 +1,4 @@
 import segmentation_models_pytorch as smp
-import torch.nn as nn
 
 
 def get_model():
