@@ -162,6 +162,8 @@ def main():
         print(f"Fold {fold+1} HD95: {mean_hd95:.2f}px")
         
         
+        del model
+        torch.cuda.empty_cache()
         
         results.append({"fold": fold+1, "dice": best_dice, "hd95": mean_hd95})
 
