@@ -40,8 +40,8 @@ def run_inference(output_dir, image_dir, mask_dir, n_samples=6):
     samples = random.sample(range(len(val_images)), n_samples)
 
     fig, axes = plt.subplots(n_samples, 3, figsize=(12, 4 * n_samples))
-    fig.suptitle("Bone Segmentation Results\nDice=0.9403 | HD95=4.67px", 
-                 fontsize=16, fontweight='bold')
+    fig.suptitle("Bone Segmentation Results\nDice: 0.9403 ± 0.0052  |  HD95: 4.67 ± 1.38 px", 
+             fontsize=14, fontweight='bold', y=1.01)
 
     for row, idx in enumerate(samples):
         img = cv2.imread(val_images[idx])
