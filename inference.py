@@ -111,8 +111,8 @@ def visualize_predictions(output_dir, image_dir, mask_dir, best_fold_idx, worst_
 
 def save_results_chart(output_dir, results):
     folds = [f"Fold {r['fold']}" for r in results]
-    dices = [r['dice'] for r in results]
-    hd95s = [r['hd95'] for r in results]
+    dices = [r['best_dice'] for r in results]
+    hd95s = [r['mean_hd95'] for r in results]
 
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(12, 4))
 
