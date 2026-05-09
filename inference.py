@@ -16,7 +16,7 @@ def get_predictions(output_dir, image_dir, mask_dir, fold_idx):
     Given a fold index, returns sorted list of (idx, dice, img, mask, pred_bin)
     """
     image_paths, mask_folders = build_file_lists(image_dir, mask_dir)
-    kf = KFold(n_splits=5, shuffle=True, random_state=42)
+    kf = KFold(n_splits=5, shuffle=True, random_state=66)
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     val_transform = Augment.Compose([
@@ -24,14 +24,14 @@ def get_predictions(output_dir, image_dir, mask_dir, fold_idx):
         ToTensorV2(),
     ])
 
-    # fold'un val setini al
+    # get fold's data set
     for fold, (train_idx, val_idx) in enumerate(kf.split(image_paths)):
         if fold == fold_idx:
             val_images = [image_paths[i] for i in val_idx]
             val_masks  = [mask_folders[i] for i in val_idx]
             break
 
-    # model yükle
+    # reload the model
     model = get_model().to(device)
     model.load_state_dict(torch.load(
         os.path.join(output_dir, f"fold{fold_idx+1}_best.pth"),
@@ -67,11 +67,11 @@ def get_predictions(output_dir, image_dir, mask_dir, fold_idx):
 def visualize_predictions(output_dir, image_dir, mask_dir, best_fold_idx, worst_fold_idx):
     os.makedirs(output_dir, exist_ok=True)
 
-    # best fold'dan en iyi 3
+    # best of 3 from best fold
     best_preds  = get_predictions(output_dir, image_dir, mask_dir, best_fold_idx)
     best_3      = best_preds[-3:][::-1]  # en iyiden başla
 
-    # worst fold'dan en kötü 3
+    # worst of 3 from worst fold
     worst_preds = get_predictions(output_dir, image_dir, mask_dir, worst_fold_idx)
     worst_3     = worst_preds[:3]
 
@@ -86,8 +86,7 @@ def visualize_predictions(output_dir, image_dir, mask_dir, best_fold_idx, worst_
     ]
 
     fig, axes = plt.subplots(6, 3, figsize=(12, 24))
-    fig.suptitle("Bone Segmentation — Best & Worst Predictions",
-                 fontsize=14, fontweight='bold')
+    plt.suptitle("Bone Segmentation: Best & Worst Predictions", fontsize=14)
 
     for row, (idx, dice, img_resized, mask, pred_bin) in enumerate(selected):
         axes[row, 0].imshow(img_resized, cmap='gray')
@@ -104,7 +103,7 @@ def visualize_predictions(output_dir, image_dir, mask_dir, best_fold_idx, worst_
         axes[row, 2].set_title("Prediction")
         axes[row, 2].axis('off')
 
-    plt.tight_layout()
+    plt.tight_layout(rect=[0, 0, 1, 0.98])
     plt.savefig(os.path.join(output_dir, "predictions_visualization.png"), dpi=300, bbox_inches='tight')
     plt.close()
     print("Saved: predictions_visualization.png")
@@ -142,9 +141,20 @@ def save_results_chart(output_dir, results):
 
 
 if __name__ == "__main__":
-    IMAGE_DIR  = "/kaggle/input/datasets/okancannazli/bones-seg/New_Labels-20260504T191710Z-3-001/New_Labels"
-    MASK_DIR   = "/kaggle/input/datasets/okancannazli/bones-seg/New_masks-20260504T191902Z-3-001/New_masks"
+    
+    #MANUEL TESTİNG OF PNG OUTPUTS
+    
+    # LOCAL DIRS
+    # IMAGE_DIR = "Data/images"
+    # MASK_DIR = "Data/masks"
+    #OUTPUT_DIR = "outputs"
+
+    #KAGGLE DIRS
+    IMAGE_DIR = "/kaggle/input/datasets/okancannazli/bones-seg/New_Labels-20260504T191710Z-3-001/New_Labels"
+    MASK_DIR  = "/kaggle/input/datasets/okancannazli/bones-seg/New_masks-20260504T191902Z-3-001/New_masks"
     OUTPUT_DIR = "/kaggle/working/outputs"
 
-    # Manuel fold seçimi için
-    visualize_predictions(OUTPUT_DIR, IMAGE_DIR, MASK_DIR, best_fold_idx=4, worst_fold_idx=1)
+    best_fold_idx = 4
+    worst_fold_idx = 1
+    
+    visualize_predictions(OUTPUT_DIR, IMAGE_DIR, MASK_DIR, best_fold_idx=best_fold_idx, worst_fold_idx=worst_fold_idx)

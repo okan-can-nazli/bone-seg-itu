@@ -16,39 +16,40 @@ from unet import get_model
 from losses import bce_dice_loss
 from metrics import dice_score, hd95
 
-#####################
+#########################################################################################################
 #! Constants
+
 LEARNING_RATE = 1e-4
 EPOCH = 50
 BATCH_SIZE = 8
-#####################
 
+#! Directory
+
+# LOCAL DIRS
+# IMAGE_DIR = "Data/images"
+# MASK_DIR = "Data/masks"
+#OUTPUT_DIR = "outputs"
+
+#KAGGLE DIRS
+IMAGE_DIR = "/kaggle/input/datasets/okancannazli/bones-seg/New_Labels-20260504T191710Z-3-001/New_Labels"
+MASK_DIR  = "/kaggle/input/datasets/okancannazli/bones-seg/New_masks-20260504T191902Z-3-001/New_masks"
+OUTPUT_DIR = "/kaggle/working/outputs"
+#########################################################################################################
+
+os.makedirs(OUTPUT_DIR, exist_ok=True)
 
 def main():
     
-    #! Directory
-    ###########################################################################################################################
-    
-    # LOCAL DIRS
-    # IMAGE_DIR = "Data/images"
-    # MASK_DIR = "Data/masks"
-    #OUTPUT_DIR = "outputs"
-    
-    #KAGGLE DIRS
-    IMAGE_DIR = "/kaggle/input/datasets/okancannazli/bones-seg/New_Labels-20260504T191710Z-3-001/New_Labels"
-    MASK_DIR  = "/kaggle/input/datasets/okancannazli/bones-seg/New_masks-20260504T191902Z-3-001/New_masks"
-    OUTPUT_DIR = "/kaggle/working/outputs"
-    
-    ###########################################################################################################################
-
-    os.makedirs(OUTPUT_DIR, exist_ok=True)
 
     image_paths, mask_folders = build_file_lists(IMAGE_DIR, MASK_DIR)  # 499 matched image-mask pairs
 
-    kf = KFold(n_splits=5, shuffle=True, random_state=66) # each fold: all 499 samples, ~400 train / ~100 val, different split each time, select random val and train sample EVERY FOLD 
-                                                            # Fold 1: 1-100 val, 101-499 train
-                                                            # Fold 2: 101-200 val, 1-100 + 201-499 train
-                                                            # ...
+    kf = KFold(n_splits=5, shuffle=True, random_state=66) 
+    # each fold: all 499 samples, ~400 train / ~100 val, different split each time, select random val and train sample EVERY FOLD 
+    # Fold 1: 1-100 val, 101-499 train
+    # Fold 2: 101-200 val, 1-100 + 201-499 train
+    # ...
+    
+    
     # augmentation & normalize
     train_transform = Augment.Compose([
         Augment.HorizontalFlip(p=0.5),
@@ -202,13 +203,14 @@ def main():
     print(f"\nOverall: Dice={np.mean(dices):.4f} ± {np.std(dices):.4f}, HD95={np.mean(hd95s):.2f} ± {np.std(hd95s):.2f}px")
 
 
+
     # inference
     best_fold_idx  = max(range(len(results)), key=lambda i: results[i]['dice'])
     worst_fold_idx = min(range(len(results)), key=lambda i: results[i]['dice'])
 
     from inference import visualize_predictions, save_results_chart
     save_results_chart(OUTPUT_DIR, results)
-    visualize_predictions(OUTPUT_DIR, IMAGE_DIR, MASK_DIR, best_fold_idx, worst_fold_idx)
+    visualize_predictions(OUTPUT_DIR, IMAGE_DIR, MASK_DIR, best_fold_idx, worst_fold_idx) # here re-calculate outputs of the given folds cause we delete each fold after executed because of performance reasons
 
 if __name__ == "__main__":
     main()
