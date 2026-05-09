@@ -45,8 +45,10 @@ def main():
 
     image_paths, mask_folders = build_file_lists(IMAGE_DIR, MASK_DIR)  # 499 matched image-mask pairs
 
-    kf = KFold(n_splits=5, shuffle=True, random_state=42) # (train:400 : validate:100 sample in all folds) / 5 
-
+    kf = KFold(n_splits=5, shuffle=True, random_state=42) # each fold: all 499 samples, ~400 train / ~100 val, different split each time, select random val and train sample EVERY FOLD 
+                                                            # Fold 1: 1-100 val, 101-499 train
+                                                            # Fold 2: 101-200 val, 1-100 + 201-499 train
+                                                            # ...
     # augmentation & normalize
     train_transform = Augment.Compose([
         Augment.HorizontalFlip(p=0.5),
@@ -83,11 +85,12 @@ def main():
         train_loader = DataLoader(train_dataset, batch_size=BATCH_SIZE, shuffle=True)
         val_loader   = DataLoader(val_dataset,   batch_size=1, shuffle=False)
 
+        # prioritize gpu usage
         device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         model  = get_model().to(device)
 
-        optimizer = torch.optim.AdamW(model.parameters(), lr=LEARNING_RATE, weight_decay=1e-4)
-        scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=EPOCH, eta_min=1e-6)
+        optimizer = torch.optim.AdamW(model.parameters(), lr=LEARNING_RATE, weight_decay=1e-4) # weight_decay to prevent overfitting (one feature focus)
+        scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=EPOCH, eta_min=1e-6) # reduce Learning rate at every epoch based on cosine func (min = 1e-6) (fast - mid - slow change rate)
 
         best_dice = 0.0
         best_path = os.path.join(OUTPUT_DIR, f"fold{fold+1}_best.pth")
@@ -121,9 +124,9 @@ def main():
             # --- VALIDATİON ---
             model.eval()
             val_dices = []
-            val_hd95s = []
+            # val_hd95s = [] 
 
-            with torch.no_grad():
+            with torch.no_grad(): # dont calculate grad for validation phase
                 for images, masks in val_loader:
                     images  = images.to(device)
                     masks = masks.to(device)
@@ -131,7 +134,7 @@ def main():
                     preds = preds.squeeze(1)  # (B,1,H,W) → (B,H,W)
                     
                     val_dices.append(dice_score(preds, masks).item())
-                    # val_hd95s.append(hd95(preds, masks))
+                    # val_hd95s.append(hd95(preds, masks)) # skipped: make the system slow casuing of cdist
 
             mean_dice = np.mean(val_dices)
             # mean_hd95 = np.mean(val_hd95s)
@@ -149,8 +152,8 @@ def main():
             
             
         #visualation
-        # Loss/Dice graph
-        epochs_range = range(1, EPOCH + 1)
+        
+        # Loss/Dice graph (mat plot lib)
         fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(12, 4))
         ax1.plot(train_losses, label="Train Loss")
         ax1.set_title(f"Fold {fold+1} - Loss")
@@ -164,8 +167,11 @@ def main():
         plt.savefig(os.path.join(OUTPUT_DIR, f"fold{fold+1}_metrics.png"), dpi=300)
         plt.close()
         
+        
+        model.load_state_dict(torch.load(best_path)) # load best model checkpoint for HD95 evaluation (not the last epoch)
         model.eval()
         fold_hd95s = []
+        
         with torch.no_grad():
             for images, masks in val_loader:
                 images = images.to(device)
@@ -176,22 +182,23 @@ def main():
         mean_hd95 = np.mean(fold_hd95s)
         print(f"Fold {fold+1} HD95: {mean_hd95:.2f}px")
         
-        
+        # free memory enf of the fold
         del model
         torch.cuda.empty_cache()
+        
         import gc
-        gc.collect()
+        gc.collect() # garbage collector
 
-        results.append({"fold": fold+1, "dice": best_dice, "hd95": mean_hd95})
+        results.append({"fold": fold+1, "best_dice": best_dice, "mean_hd95": mean_hd95})
 
 
 
     print("\n=== RESULTS ===")
     for r in results:
-        print(f"Fold {r['fold']}: Dice={r['dice']:.4f}, HD95={r['hd95']:.2f}px")
+        print(f"Fold {r['fold']}: Dice={r['best_dice']:.4f}, HD95={r['mean_hd95']:.2f}px")
 
-    dices = [r["dice"] for r in results]
-    hd95s = [r["hd95"] for r in results]
+    dices = [r["best_dice"] for r in results]
+    hd95s = [r["mean_hd95"] for r in results]
     print(f"\nOverall: Dice={np.mean(dices):.4f} ± {np.std(dices):.4f}, HD95={np.mean(hd95s):.2f} ± {np.std(hd95s):.2f}px")
 
 
