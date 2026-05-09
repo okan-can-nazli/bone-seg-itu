@@ -135,7 +135,7 @@ def main():
                     preds = preds.squeeze(1)  # (B,1,H,W) → (B,H,W)
                     
                     val_dices.append(dice_score(preds, masks).item())
-                    # val_hd95s.append(hd95(preds, masks)) # skipped: make the system slow casuing of cdist
+                    # val_hd95s.append(hd95(preds, masks)) # skipped: make the system slower
 
             mean_dice = np.mean(val_dices)
             # mean_hd95 = np.mean(val_hd95s)
