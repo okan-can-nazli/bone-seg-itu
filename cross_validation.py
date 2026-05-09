@@ -45,7 +45,7 @@ def main():
 
     image_paths, mask_folders = build_file_lists(IMAGE_DIR, MASK_DIR)  # 499 matched image-mask pairs
 
-    kf = KFold(n_splits=5, shuffle=True, random_state=42) # each fold: all 499 samples, ~400 train / ~100 val, different split each time, select random val and train sample EVERY FOLD 
+    kf = KFold(n_splits=5, shuffle=True, random_state=66) # each fold: all 499 samples, ~400 train / ~100 val, different split each time, select random val and train sample EVERY FOLD 
                                                             # Fold 1: 1-100 val, 101-499 train
                                                             # Fold 2: 101-200 val, 1-100 + 201-499 train
                                                             # ...
