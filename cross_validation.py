@@ -3,12 +3,14 @@ import torch
 import numpy as np
 from torch.utils.data import DataLoader
 from sklearn.model_selection import KFold # provides train/val index splits into 5-fold
-from tqdm import tqdm # training progress bar 
-import matplotlib.pyplot as plt
-
 import albumentations as Augment # augmentation lib
 from albumentations.pytorch import ToTensorV2 # convert np array into tensor
 
+# graph & uı
+from tqdm import tqdm # training progress bar 
+import matplotlib.pyplot as plt
+
+# helper files
 from dataset import BoneSegDataset, build_file_lists
 from unet import get_model
 from losses import bce_dice_loss
@@ -24,29 +26,38 @@ BATCH_SIZE = 8
 
 def main():
     
-    # LOCAL DİRS
+    #! Directory
+    ###########################################################################################################################
+    
+    # LOCAL DIRS
     # IMAGE_DIR = "Data/images"
     # MASK_DIR = "Data/masks"
+    #OUTPUT_DIR = "outputs"
     
-    #KAGGLE DİRS
+    #KAGGLE DIRS
     IMAGE_DIR = "/kaggle/input/datasets/okancannazli/bones-seg/New_Labels-20260504T191710Z-3-001/New_Labels"
     MASK_DIR  = "/kaggle/input/datasets/okancannazli/bones-seg/New_masks-20260504T191902Z-3-001/New_masks"
     OUTPUT_DIR = "/kaggle/working/outputs"
     
+    ###########################################################################################################################
+
     os.makedirs(OUTPUT_DIR, exist_ok=True)
 
-    image_paths, mask_folders = build_file_lists(IMAGE_DIR, MASK_DIR)
+    image_paths, mask_folders = build_file_lists(IMAGE_DIR, MASK_DIR)  # 499 matched image-mask pairs
 
     kf = KFold(n_splits=5, shuffle=True, random_state=42) # (train:400 : validate:100 sample in all folds) / 5 
 
+    # augmentation & normalize
     train_transform = Augment.Compose([
         Augment.HorizontalFlip(p=0.5),
         Augment.RandomRotate90(p=0.5),
         Augment.ShiftScaleRotate(p=0.3),
+        
         Augment.Normalize(mean=(0.485, 0.456, 0.406), std=(0.229, 0.224, 0.225)),
         ToTensorV2(),
     ])
 
+    # only normalize
     val_transform = Augment.Compose([
     Augment.Normalize(mean=(0.485, 0.456, 0.406), std=(0.229, 0.224, 0.225)),
     ToTensorV2(),
@@ -58,8 +69,8 @@ def main():
         print(f"\n--- Fold {fold+1}/5 ---")
 
         # len = 400
-        train_images = [image_paths[i] for i in train_idx]
-        train_masks  = [mask_folders[i] for i in train_idx]
+        train_images = [image_paths[i] for i in train_idx] # each image
+        train_masks  = [mask_folders[i] for i in train_idx] # that image's mask fileS
         
         # len = 100
         val_images   = [image_paths[i] for i in val_idx]

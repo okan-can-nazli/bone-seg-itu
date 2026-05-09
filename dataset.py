@@ -76,14 +76,14 @@ def load_merged_mask(mask_folder):
     return merged
 
 def build_file_lists(images_dir, masks_dir):
+    
     images_ls = []
     masks_ls = []
     
     # sorted() provides index matching between images and masks (based on index)
-    
     for sub_folder in sorted([f for f in os.listdir(masks_dir) 
                                if os.path.isdir(os.path.join(masks_dir, f)) 
-                               and f.isdigit()], key=lambda x: int(x)):  # lambda provides sorting depends on int
+                               and f.isdigit()], key=lambda x: int(x)):  # lambda provides sorting depends on int,not default str
         
         mask_path = os.path.join(masks_dir, sub_folder)
         img_folder = os.path.join(images_dir, sub_folder)
@@ -91,8 +91,8 @@ def build_file_lists(images_dir, masks_dir):
         if not os.path.isdir(img_folder):
             continue
             
-        # image bul
-        jpgs = [f for f in os.listdir(img_folder) if f.lower().endswith((".jpg", ".jpeg", ".png"))] # there are 468 samples only ".jpg" ,total 499 samples (not 500 because of folder 283 contains .gif file) 
+        # get images
+        jpgs = [f for f in os.listdir(img_folder) if f.lower().endswith((".jpg", ".jpeg", ".png"))] # there were 468 samples only ".jpg" ,total 499 samples (not 500 because of folder 283 contains .gif file) 
         if not jpgs:
             continue
             
