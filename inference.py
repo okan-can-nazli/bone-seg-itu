@@ -145,14 +145,14 @@ if __name__ == "__main__":
     #MANUEL TESTİNG OF PNG OUTPUTS
     
     # LOCAL DIRS
-    # IMAGE_DIR = "Data/images"
-    # MASK_DIR = "Data/masks"
-    #OUTPUT_DIR = "outputs"
+    IMAGE_DIR = "Data/images"
+    MASK_DIR = "Data/masks"
+    OUTPUT_DIR = "outputs"
 
     #KAGGLE DIRS
-    IMAGE_DIR = "/kaggle/input/datasets/okancannazli/bones-seg/New_Labels-20260504T191710Z-3-001/New_Labels"
-    MASK_DIR  = "/kaggle/input/datasets/okancannazli/bones-seg/New_masks-20260504T191902Z-3-001/New_masks"
-    OUTPUT_DIR = "/kaggle/working/outputs"
+    # IMAGE_DIR = "/kaggle/input/datasets/okancannazli/bones-seg/New_Labels-20260504T191710Z-3-001/New_Labels"
+    # MASK_DIR  = "/kaggle/input/datasets/okancannazli/bones-seg/New_masks-20260504T191902Z-3-001/New_masks"
+    # OUTPUT_DIR = "/kaggle/working/outputs"
 
     best_fold_idx = 4
     worst_fold_idx = 1
