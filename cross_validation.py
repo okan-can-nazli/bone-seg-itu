@@ -23,7 +23,7 @@ LEARNING_RATE = 1e-4
 EPOCH = 50
 BATCH_SIZE = 8
 
-#! Directory
+#! Directorys
 
 # LOCAL DIRS
 IMAGE_DIR = "Data/images"
