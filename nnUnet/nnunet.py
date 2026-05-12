@@ -1,4 +1,5 @@
-#nnU-Net 5-fold cross validation (2D, 50 epochs)
+# nnU-Net 2D — 5-fold cross validation (50 epochs)
+# Kaggle notebook: https://www.kaggle.com/code/okancannazli/nnu-net-bone-seg
 
 import os
 import subprocess
@@ -8,19 +9,19 @@ import subprocess
 
 DATASET_ID = "001"
 CONFIG     = "2d"
-EPOCHS     = 50
+TRAINER    = "nnUNetTrainer_50epochs"  # built-in 50-epoch trainer
 
 #! Directories
 
 # LOCAL DIRS
-NNUNET_RAW          = "nnunet_raw"
-NNUNET_PREPROCESSED = "nnunet_preprocessed"
-NNUNET_RESULTS      = "nnunet_results"
+# NNUNET_RAW          = "nnunet_raw"
+# NNUNET_PREPROCESSED = "nnunet_preprocessed"
+# NNUNET_RESULTS      = "nnunet_results"
 
 # KAGGLE DIRS
-# NNUNET_RAW          = "/kaggle/working/nnunet_outputs"
-# NNUNET_PREPROCESSED = "/kaggle/working/nnunet_preprocessed"
-# NNUNET_RESULTS      = "/kaggle/working/nnunet_results"
+NNUNET_RAW          = "/kaggle/working/nnunet_raw"
+NNUNET_PREPROCESSED = "/kaggle/working/nnunet_preprocessed"
+NNUNET_RESULTS      = "/kaggle/working/nnunet_results"
 #########################################################################################################
 
 os.environ["nnUNet_raw"]          = NNUNET_RAW
@@ -37,7 +38,7 @@ def main():
     subprocess.run([
         "nnUNetv2_plan_and_preprocess",
         "-d", DATASET_ID,
-        "-c", CONFIG
+        "--verify_dataset_integrity"
     ], check=True)
 
     for fold in range(5):
@@ -48,7 +49,7 @@ def main():
             CONFIG,
             str(fold),
             "--npz",
-            "-num_epochs", str(EPOCHS)
+            "-tr", TRAINER
         ], check=True)
 
     print("\nAll folds done.")

@@ -1,8 +1,10 @@
 # Bone Segmentation in X-Ray Images
 
-Binary semantic segmentation of bones in X-ray images using U-Net with a pretrained ResNet34 encoder.
+Binary semantic segmentation of bones in X-ray images using U-Net with a pretrained ResNet34 encoder. Also includes an nnU-Net 2D baseline for comparison.
 
 ## Results
+
+### U-Net + ResNet34
 
 | Fold | Dice ↑ | HD95 ↓ (px) |
 |------|--------|-------------|
@@ -12,6 +14,17 @@ Binary semantic segmentation of bones in X-ray images using U-Net with a pretrai
 | 4    | 0.9424 | 2.83        |
 | 5    | 0.9324 | 4.63        |
 | **Mean** | **0.9392 ± 0.0040** | **4.40 ± 2.09** |
+
+### nnU-Net 2D (50 epochs)
+
+| Fold | Dice ↑ |
+|------|--------|
+| 1    | 0.9452 |
+| 2    | 0.9410 |
+| 3    | 0.9402 |
+| 4    | 0.9308 |
+| 5    | 0.9369 |
+| **Mean** | **0.9388** |
 
 ## Architecture
 
@@ -41,20 +54,27 @@ Binary semantic segmentation of bones in X-ray images using U-Net with a pretrai
 
 ```
 bone-seg-itu/
-├── dataset.py           # Dataset class + file list builder
-├── unet.py              # U-Net model (segmentation-models-pytorch)
-├── losses.py            # BCE + Dice combined loss
-├── metrics.py           # Dice score + HD95 (Hausdorff Distance)
-├── cross_validation.py  # 5-fold CV training — main script
-└── inference.py         # Best & worst prediction visualization
+├──Unet/
+    ├── dataset.py           # Dataset class + file list builder
+    ├── unet.py              # U-Net model (segmentation-models-pytorch)
+    ├── losses.py            # BCE + Dice combined loss
+    ├── metrics.py           # Dice score + HD95 (Hausdorff Distance)
+    ├── cross_validation.py  # 5-fold CV training — main script
+    ├── inference.py         # Best & worst prediction visualization
+├── nnUNet/
+    ├── dataset_nnunet.py  # Converts data to nnU-Net NIfTI format
+    └── nnunet.py          # nnU-Net 2D training pipeline
 ```
+
+## Kaggle Notebooks
+
+- **U-Net:** https://www.kaggle.com/code/okancannazli/bone-segmentation
+- **nnU-Net:** https://www.kaggle.com/code/okancannazli/nnu-net-bone-seg
 
 ## How to Run
 
-### On Kaggle
+### U-Net on Kaggle
 
-1. Upload dataset to Kaggle
-2. Clone this repo in a notebook cell:
 ```bash
 !git clone https://github.com/okan-can-nazli/bone-seg-itu.git
 %cd bone-seg-itu
@@ -62,20 +82,19 @@ bone-seg-itu/
 !python cross_validation.py
 ```
 
+### nnU-Net on Kaggle
+
+```bash
+!git clone https://github.com/okan-can-nazli/bone-seg-itu.git
+%cd bone-seg-itu
+!pip install nnunetv2
+!python nnUNet/dataset_nnunet.py   # convert data
+!python nnUNet/nnunet.py           # train all folds
+```
+
 ### Local
 
-Update the directory paths in `cross_validation.py`:
-```python
-IMAGE_DIR = "path/to/New_Labels"
-MASK_DIR  = "path/to/New_masks"
-OUTPUT_DIR = "./outputs"
-```
-
-Then:
-```bash
-pip install segmentation-models-pytorch albumentations torch torchvision
-python cross_validation.py
-```
+Update directory paths in `cross_validation.py` or `nnUNet/dataset_nnunet.py`, then run.
 
 ## Key Design Decisions
 
@@ -83,3 +102,4 @@ python cross_validation.py
 - **BCE+Dice loss:** BCE stabilizes early training, Dice forces accurate overlap
 - **HD95 over HD100:** 95th percentile is more robust to boundary outliers
 - **val batch_size=1:** Ensures accurate per-sample Dice and HD95 computation
+- **nnU-Net format:** Data converted to NIfTI (.nii.gz) with shape (H, W, 1) for 2D nnU-Net compatibility
