@@ -1,8 +1,4 @@
-"""
-train_nnunet.py — nnU-Net 5-fold cross validation (2D, 50 epochs)
-
-Run after prepare_data.py.
-"""
+#nnU-Net 5-fold cross validation (2D, 50 epochs)
 
 import os
 import subprocess
