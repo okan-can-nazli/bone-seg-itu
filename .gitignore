@@ -6,3 +6,5 @@ Data/
 # Global ignore for Python cache
 __pycache__/
 *.py[cod]
+
+*.pth
